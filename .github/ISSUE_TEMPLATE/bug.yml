@@ -1,0 +1,49 @@
+name: Relatar um problema
+description: Algo não funciona como deveria no Studio.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Obrigado por relatar! Falha de segurança? Não use issue: veja SECURITY.md."
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu
+      description: Descreva o problema e o que você esperava que acontecesse.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Abrir o módulo Pixel
+        2. Arquivo › Abrir… uma imagem HEIC
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: Módulo
+      options: [Pixel, Vetor, Foto, Ponte, Login/conta/configurações, Projetos na nuvem, Servidor/API, Outro]
+    validations:
+      required: true
+  - type: input
+    id: navegador
+    attributes:
+      label: Navegador e sistema
+      placeholder: "Chrome 140 no Windows 11 / Safari no iPhone (iOS 26)"
+    validations:
+      required: true
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do Studio
+      description: "Digite STUDIO_VERSION no console do navegador (ou veja dist/web/VERSION se roda localmente)."
+  - type: textarea
+    id: extra
+    attributes:
+      label: Capturas, arquivos de exemplo, erros do console
+      description: Não anexe imagens pessoais ou de terceiros sem autorização.

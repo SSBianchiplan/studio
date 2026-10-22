@@ -1,0 +1,28 @@
+# /etc/systemd/system/gplansis-studio.service
+# GPlanSiS|Studio — acesso, permissões e entrega do editor (uvicorn no loopback, atrás do Caddy).
+# Um worker só: o banco é SQLite e o limite de tentativas de login fica em memória.
+[Unit]
+Description=GPlanSiS|Studio (editor de imagem) — acesso
+After=network.target
+
+[Service]
+Type=simple
+User=studio
+Group=studio
+WorkingDirectory=/opt/gplansis-studio/server
+EnvironmentFile=/opt/gplansis-studio/.env
+ExecStart=/opt/gplansis-studio/.venv/bin/uvicorn app:app --host 127.0.0.1 --port 8972 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/gplansis-studio/dados
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+MemoryMax=600M
+
+[Install]
+WantedBy=multi-user.target

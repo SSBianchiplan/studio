@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Abrir o GPlanSiS|Studio
+    url: https://studio.gplansis.com
+    about: O editor no ar.
+  - name: Relatar falha de segurança (privado)
+    url: https://github.com/SSBianchiplan/studio/blob/main/SECURITY.md
+    about: Não abra issue pública para vulnerabilidades — escreva para contato@gplansis.com.

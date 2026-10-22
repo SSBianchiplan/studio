@@ -1,0 +1,2 @@
+@cornerstonejs/codec-openjpeg 1.3.6 — MIT (https://github.com/cornerstonejs/codecs)
+OpenJPEG — BSD 2-Clause (https://github.com/uclouvain/openjpeg/blob/master/LICENSE)

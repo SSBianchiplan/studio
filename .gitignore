@@ -1,0 +1,38 @@
+# build gerado por build.py
+dist/
+
+# dados de execução (banco SQLite, projetos, senha inicial do master)
+dados/
+server/dados/
+*.db
+*.sqlite
+*.sqlite3
+
+# segredos
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Node (ferramentas de prova/ícones)
+node_modules/
+package-lock.json
+
+# backups, logs e lixo de sistema
+*.bak
+*.bak-*
+*-bak-*
+web.antigo/
+web.novo/
+*.log
+.DS_Store
+Thumbs.db
+
+# saídas dos testes de navegador
+saida/
+amostras/

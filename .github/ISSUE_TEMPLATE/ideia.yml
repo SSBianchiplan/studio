@@ -1,0 +1,30 @@
+name: Sugerir uma ideia
+description: Um formato, filtro, ferramenta ou melhoria nova.
+title: "[ideia] "
+labels: ["ideia"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Que problema isso resolve?
+      description: Conte o que você tenta fazer hoje e onde o Studio atrapalha.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta
+      description: Como você imagina a solução. Referências de outros programas ajudam.
+    validations:
+      required: true
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: Módulo
+      options: [Pixel, Vetor, Foto, Ponte, Formatos, Conta/permissões, Servidor, Outro]
+  - type: checkboxes
+    id: ajuda
+    attributes:
+      label: Contribuição
+      options:
+        - label: Posso ajudar a implementar

@@ -1,0 +1,25 @@
+# =============================================================================
+#  GPlanSiS|Studio — studio.gplansis.com
+#  Importado pelo /etc/caddy/Caddyfile. Bloco próprio: não toca em outro site.
+#  Tudo passa pelo servidor do Studio (127.0.0.1:8972, /opt/gplansis-studio):
+#  é ele quem decide se a pessoa tem sessão antes de entregar o editor.
+#  CSP e cabeçalhos das páginas vêm da aplicação; o embed_os libera o os.gplansis.com.
+# =============================================================================
+
+studio.gplansis.com {
+	import seguranca_hub
+	encode zstd gzip
+	# projetos na nuvem chegam a 200 MB (imagens em PNG dentro do JSON)
+	request_body {
+		max_size 210MB
+	}
+	reverse_proxy 127.0.0.1:8972 {
+		header_up X-Forwarded-Proto https
+		transport http {
+			response_header_timeout 300s
+		}
+	}
+	log {
+		output file /var/log/caddy/studio.log
+	}
+}

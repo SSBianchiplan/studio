@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- versão maskable: fundo sangrado e marca dentro da zona segura (círculo de 80%) -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#232a30"/><stop offset="1" stop-color="#121518"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(256 256) scale(.74) translate(-258 -258)">
+    <rect x="104" y="104" width="196" height="196" rx="40" fill="#3a86d9"/>
+    <rect x="160" y="160" width="196" height="196" rx="40" fill="#3faa6b" stroke="#121518" stroke-width="14" paint-order="stroke"/>
+    <rect x="216" y="216" width="196" height="196" rx="40" fill="#f6a709" stroke="#121518" stroke-width="14" paint-order="stroke"/>
+    <path d="M276 362c22 0 38-10 38-28 0-34-74-26-74-58 0-16 15-26 36-26 15 0 28 5 37 13" fill="none" stroke="#1a1400" stroke-width="22" stroke-linecap="round"/>
+  </g>
+</svg>
