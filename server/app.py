@@ -12,6 +12,9 @@ Variáveis (arquivo .env):
                          sem ela, uma senha aleatória é gravada em
                          STUDIO_DATA/senha-inicial-master.txt)
   STUDIO_COOKIE_SECURE   1 em produção (HTTPS), 0 em teste local       [1]
+  STUDIO_ANTHROPIC_API_KEY  chave da Anthropic para as funções de IA (server/ai.py).
+                         Opcional: o admin também pode gravá-la em Configurações › IA.
+                         Sem chave, a IA fica desligada e o resto funciona normalmente.
 """
 from __future__ import annotations
 
@@ -47,12 +50,12 @@ PROJECTS = DATA / "projetos"
 
 MODULES = ["pixel", "vetor", "foto", "ponte"]
 # Permissões granulares. O papel dá o padrão; o admin pode ajustar por pessoa.
-PERMS = MODULES + ["exportar", "nuvem", "usuarios", "auditoria"]
+PERMS = MODULES + ["exportar", "nuvem", "ia", "usuarios", "auditoria"]
 ROLE_DEFAULTS = {
     "master": {p: True for p in PERMS},
     "admin": {p: True for p in PERMS},
-    "editor": {**{p: True for p in MODULES}, "exportar": True, "nuvem": True, "usuarios": False, "auditoria": False},
-    "visualizador": {**{p: True for p in MODULES}, "exportar": False, "nuvem": False, "usuarios": False, "auditoria": False},
+    "editor": {**{p: True for p in MODULES}, "exportar": True, "nuvem": True, "ia": True, "usuarios": False, "auditoria": False},
+    "visualizador": {**{p: True for p in MODULES}, "exportar": False, "nuvem": False, "ia": False, "usuarios": False, "auditoria": False},
 }
 ROLES = ["admin", "editor", "visualizador"]  # o master não é atribuível
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -211,6 +214,7 @@ def public_user(u: sqlite3.Row, full: bool = False) -> dict:
         "perms": eff_perms(u), "avatar": f"/api/avatar/{u['id']}?v={u['avatar_v']}" if u["avatar"] else None,
         "active": bool(u["active"]), "must_change": bool(u["must_change"]),
         "created_at": u["created_at"], "last_login": u["last_login"],
+        "ai_quota": u["ai_quota"] if "ai_quota" in u.keys() else None,
     }
     if full:
         try:
@@ -548,6 +552,19 @@ async def users_update(uid: int, req: Request):
             if t["id"] == actor["id"]:
                 raise HTTPException(400, "Você não pode desativar a si mesmo.")
             changes["active"] = 1 if d["active"] else 0
+        if "ai_quota" in d:
+            # cota mensal de IA (US$) da pessoa; null = padrão global. Só administradores mexem em custo.
+            if actor["role"] not in ("master", "admin"):
+                raise HTTPException(403, "Só administradores alteram a cota de IA.")
+            q = d["ai_quota"]
+            if q is not None:
+                try:
+                    q = float(q)
+                except (TypeError, ValueError):
+                    raise HTTPException(400, "Cota de IA inválida.")
+                if not 0 <= q <= 10000:
+                    raise HTTPException(400, "Cota de IA fora da faixa (0 a 10.000).")
+            changes["ai_quota"] = q
         if changes:
             c.execute(f"UPDATE users SET {', '.join(k + '=?' for k in changes)} WHERE id=?", (*changes.values(), uid))
             if changes.get("active") == 0:
@@ -708,6 +725,9 @@ async def favicon():
                         headers={"Cache-Control": "public, max-age=604800"})
 
 
+import ai  # noqa: E402  (precisa de db/need/audit definidos acima)
+
+app.include_router(ai.router)
 app.mount("/icons", StaticFiles(directory=WEB / "icons"), name="icons")
 app.mount("/vendor", StaticFiles(directory=WEB / "vendor"), name="vendor")
 app.mount("/plus", StaticFiles(directory=WEB / "plus"), name="plus")

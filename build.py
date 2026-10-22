@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "editor" / "GPlanSiS-Studio.html"
 WEB = ROOT / "web"
 OUT = ROOT / "dist" / "web"
-VERSION = "2.0.0-" + time.strftime("%Y%m%d%H%M")
+VERSION = "2.1.0-" + time.strftime("%Y%m%d%H%M")
 
 ACCEPT = ("image/*,.heic,.heif,.hif,.avif,.jxl,.tif,.tiff,.psd,.psb,.tga,.qoi,.ppm,.pgm,.pbm,.pnm,.pam,.pfm,"
           ".hdr,.pcx,.svg,.svgz,.ico,.cur,.bmp,.apng,.jfif,.dng,.cr2,.cr3,.crw,.nef,.nrw,.arw,.srf,.sr2,.orf,.raf,"
@@ -33,6 +33,9 @@ PATCHES = [
      "if(S.mod==='pixel'){for(const f of imgs){if(!P()&&/\\.(psd|psb)$/i.test(f.name)){try{await pxOpenPSDLayers(f)}catch(er){toast('Não foi possível abrir '+f.name,'err')}continue}"
      "let c;try{c=await fileToCanvas(f)}catch(er){toast('Não foi possível abrir '+f.name,'err');continue}const d=P();", 1),
     ("<title>GPlanSiS|Studio</title>", "<title>GPlanSiS|Studio</title>\n<!--HEAD-->", 1),
+    # legenda e texto alternativo (gerados pela IA) viajam no projeto
+    ("kw:p.kw,date:p.date,set:p.set", "kw:p.kw,caption:p.caption||'',alt:p.alt||'',date:p.date,set:p.set", 1),
+    ("kw:q.kw||'',date:q.date,", "kw:q.kw||'',caption:q.caption||'',alt:q.alt||'',date:q.date,", 1),
 ]
 
 PRE = r"""
@@ -74,7 +77,7 @@ def main() -> int:
     css = (WEB / "plus" / "plus.css").read_text(encoding="utf-8")
     html = html.replace("</style>\n</head>", "</style>\n<style>\n" + css + "</style>\n</head>", 1)
 
-    js = "\n".join((WEB / "plus" / f).read_text(encoding="utf-8") for f in ("formats.js", "filters.js", "account.js"))
+    js = "\n".join((WEB / "plus" / f).read_text(encoding="utf-8") for f in ("formats.js", "filters.js", "account.js", "ai.js"))
     if "</script" in js:
         print("ERRO: módulo contém </script", file=sys.stderr)
         return 1
@@ -83,7 +86,7 @@ def main() -> int:
 
     if OUT.exists():
         shutil.rmtree(OUT)
-    shutil.copytree(WEB, OUT, ignore=shutil.ignore_patterns("formats.js", "filters.js", "account.js", "plus.css", ".DS_Store"))
+    shutil.copytree(WEB, OUT, ignore=shutil.ignore_patterns("formats.js", "filters.js", "account.js", "ai.js", "plus.css", ".DS_Store"))
     (OUT / "index.html").write_text(html, encoding="utf-8")
 
     # As fontes embutidas no editor também servem à página de login.

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://studio.gplansis.com"><img alt="no ar" src="https://img.shields.io/badge/no%20ar-studio.gplansis.com-f6a709?style=flat-square"></a>
-  <img alt="versão 2.0.0" src="https://img.shields.io/badge/vers%C3%A3o-2.0.0-3a86d9?style=flat-square">
+  <img alt="versão 2.1.0" src="https://img.shields.io/badge/vers%C3%A3o-2.1.0-3a86d9?style=flat-square">
   <a href="LICENSE"><img alt="licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-2ea44f?style=flat-square"><">
   <img alt="PWA" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-3faa6b?style=flat-square">
   <img alt="FastAPI + SQLite" src="https://img.shields.io/badge/servidor-FastAPI%20%2B%20SQLite-1f2428?style=flat-square">
@@ -34,7 +34,7 @@ O **GPlanSiS|Studio** é um editor de imagem completo que roda no navegador, com
 | **Foto** | catálogo com avaliação, marcação e rótulos, revelação rápida, predefinições e sincronização de ajustes |
 | **Ponte** | integração entre os módulos: objetos inteligentes vinculados, biblioteca compartilhada, paleta, vetorização e fluxos em lote |
 
-**O processamento de imagem acontece no aparelho de cada pessoa** — a imagem não sai do navegador. O servidor só cuida de acesso, usuários, permissões, preferências, avatar e dos projetos que a pessoa escolhe salvar na nuvem.
+**O processamento de imagem acontece no aparelho de cada pessoa** — a imagem não sai do navegador. O servidor só cuida de acesso, usuários, permissões, preferências, avatar e dos projetos que a pessoa escolhe salvar na nuvem. A exceção é opcional e explícita: as **funções de IA** (menu **IA**), quando usadas, enviam uma cópia reduzida da imagem ao Claude, da Anthropic (ver [Inteligência artificial](#inteligência-artificial-claude)).
 
 ## Funcionalidades
 
@@ -63,7 +63,7 @@ O **GPlanSiS|Studio** é um editor de imagem completo que roda no navegador, com
 **Contas e permissões**
 
 - Login com e-mail e senha; troca obrigatória no primeiro acesso.
-- Papéis **administrador**, **editor** e **visualizador**, com ajuste fino por pessoa: Pixel · Vetor · Foto · Ponte · Exportar arquivos · Projetos na nuvem · Gerenciar usuários · Ver auditoria.
+- Papéis **administrador**, **editor** e **visualizador**, com ajuste fino por pessoa: Pixel · Vetor · Foto · Ponte · Exportar arquivos · Projetos na nuvem · Usar IA · Gerenciar usuários · Ver auditoria.
 - Um administrador **master** (definido por variável de ambiente) que não pode ser excluído, desativado nem rebaixado.
 - Segurança: senha com **scrypt**, cookie de sessão HttpOnly/Secure/SameSite=Lax, cabeçalho anti-CSRF em toda escrita, limite de 8 tentativas de login por 15 min (por IP e por e-mail), sessões ativas revogáveis e **auditoria** de logins, falhas e alterações.
 
@@ -83,13 +83,41 @@ O **GPlanSiS|Studio** é um editor de imagem completo que roda no navegador, com
 
 <sub>Capturas feitas numa instância local com dados fictícios (projeto de demonstração do próprio editor).</sub>
 
+## Inteligência artificial (Claude)
+
+Menu **IA** no Pixel, no Vetor e no Foto, com o Claude (Anthropic) chamado **pelo servidor** (`server/ai.py`, front em `web/plus/ai.js`):
+
+| Função | Módulo | O que faz |
+|---|---|---|
+| Editar com IA (`Ctrl+K`) | Pixel | transforma um pedido em texto numa camada de ajuste com filtros do próprio Studio (desfazível) |
+| Melhorar automaticamente | Pixel, Foto | propõe a revelação (exposição, balanço de branco, contraste…) |
+| Selecionar com IA | Pixel | cria a seleção do objeto descrito |
+| Sugerir enquadramento | Pixel, Foto | até 4 recortes por proporção |
+| Gerar ilustração / Redesenhar como vetor | Vetor | SVG editável a partir de texto ou de uma imagem |
+| Catalogar | Foto | título, legenda, texto alternativo, palavras-chave, nota e rótulo |
+| Ler texto, Analisar paleta, Revisar composição, Perguntar | todos | OCR, cores dominantes, crítica e perguntas livres |
+
+**Chave.** Só no servidor: `STUDIO_ANTHROPIC_API_KEY` no `.env` **ou** gravada por um administrador em *Configurações › IA* (tabela `settings` do banco, na pasta de dados com permissão 700; a do painel tem precedência). A chave nunca volta ao navegador (a tela mostra só os 4 últimos caracteres), não entra na auditoria nem em log. **Sem chave** a IA fica desligada: as rotas respondem 503 com orientação, o menu avisa quem deve configurar e o resto do Studio funciona normalmente.
+
+**Permissão.** `ia` ("Usar IA"): ligada por padrão para master, administrador e editor; desligada para visualizador. Ajuste por pessoa em *Configurações › Usuários*. Só administradores veem e alteram a configuração da IA e as cotas.
+
+**Cotas e custo.** Cada chamada grava tokens e custo estimado (US$) em `ai_usage`. Há uma **cota mensal por pessoa** (padrão global de US$ 20, ajustável em *Configurações › IA*; cota própria por pessoa na tabela *Uso por pessoa*). Ao atingir a cota, a rota responde 402. Além disso: até 3 chamadas simultâneas e 30 por minuto por pessoa (429). A cota é conferida antes de cada chamada, então o mês pode fechar levemente acima dela (no máximo o custo das chamadas já em andamento).
+
+**Modelo e nível.** Claude Opus 5.5 (padrão), Sonnet 5.5 ou Haiku 5.5; nível *Economia*, *Padrão* (esforço por função) ou *Máxima qualidade*.
+
+**Limites e proteções.** Corpo de `/api/ai/run` até 6 MB (lido em blocos, recusado com 413 antes de interpretar); imagem JPEG/PNG/WebP/GIF em base64 até 5 MB (o navegador já envia reduzida); pedido de texto até 4.000 caracteres. A resposta do modelo vem em JSON validado por esquema; o texto dentro das imagens e o pedido da pessoa são tratados como dados, não como instruções. O SVG gerado passa por limpeza no servidor (sem `script`, `foreignObject`, `style`, `image`, eventos `on*`, `href` externos ou `javascript:`, nem `url()` externo) antes de virar documento no Vetor.
+
+| Variável | Para quê | Padrão |
+|---|---|---|
+| `STUDIO_ANTHROPIC_API_KEY` | chave da Anthropic (opcional; alternativa ao painel) | vazia = IA desligada |
+
 ## Arquitetura
 
 ```mermaid
 flowchart LR
   subgraph Navegador["Navegador (PWA)"]
     ED["Editor<br/>Pixel · Vetor · Foto · Ponte"]
-    PLUS["Módulos plus<br/>formats · filters · account"]
+    PLUS["Módulos plus<br/>formats · filters · account · ai"]
     WASM["Decodificadores WASM<br/>libheif · jSquash JXL · OpenJPEG"]
     IDB[("IndexedDB<br/>por usuário")]
     SW["Service worker"]
@@ -98,7 +126,7 @@ flowchart LR
   end
 
   subgraph Servidor["Servidor (FastAPI · uvicorn · 1 worker)"]
-    API["/api: sessão, usuários,<br/>permissões, avatar, projetos, auditoria"]
+    API["/api: sessão, usuários,<br/>permissões, avatar, projetos, auditoria, IA"]
     WEB["Estáticos do editor<br/>(só com sessão válida)"]
     DB[("SQLite<br/>studio.db")]
     PJ[("projetos/<br/>arquivos JSON")]
@@ -108,17 +136,18 @@ flowchart LR
 
   Caddy["Caddy<br/>HTTPS · proxy reverso"]
   Navegador -- "HTTPS" --> Caddy --> Servidor
+  Servidor -. "só as funções de IA" .-> Claude["Anthropic API<br/>(Claude)"]
 ```
 
-**Como o build funciona.** O editor original (`editor/GPlanSiS-Studio.html`, um único arquivo HTML) **não é editado à mão**. O `build.py` aplica pontos de integração pequenos e verificados — cada troca precisa casar exatamente o número de vezes esperado, senão o build para — e injeta os módulos de `web/plus/` (formatos, filtros, conta). O resultado vai para `dist/web/`, que é o que o servidor entrega.
+**Como o build funciona.** O editor original (`editor/GPlanSiS-Studio.html`, um único arquivo HTML) **não é editado à mão**. O `build.py` aplica pontos de integração pequenos e verificados — cada troca precisa casar exatamente o número de vezes esperado, senão o build para — e injeta os módulos de `web/plus/` (formatos, filtros, conta, IA). O resultado vai para `dist/web/`, que é o que o servidor entrega.
 
 ## Stack
 
 - **Editor:** HTML/CSS/JavaScript puro (sem framework, sem bundler), Canvas 2D, IndexedDB, Service Worker.
 - **Bibliotecas no navegador:** ag-psd, UTIF.js, pako, libheif-js, jSquash (JPEG XL), OpenJPEG (`@cornerstonejs/codec-openjpeg`) servidos de `web/vendor/`; JSZip e polygon-clipping carregados sob demanda de CDN (cdnjs/jsDelivr); fontes IBM Plex embutidas.
-- **Servidor:** Python 3, FastAPI, uvicorn, SQLite (biblioteca padrão), scrypt (`hashlib`).
+- **Servidor:** Python 3, FastAPI, uvicorn, SQLite (biblioteca padrão), scrypt (`hashlib`), SDK `anthropic` (funções de IA).
 - **Produção:** systemd + Caddy (HTTPS e proxy reverso).
-- **Testes:** `tools/testar_api.py` (API, sem dependências) e `tools/prova_navegador.mjs` (Chrome real via puppeteer-core).
+- **Testes:** `tools/testar_api.py` (API, sem dependências), `tools/testar_ia.py` (rotas de IA com o Claude simulado), `tools/prova_navegador.mjs` e `tools/prova_ia.mjs` (Chrome real via puppeteer-core).
 
 ## Como rodar localmente
 
@@ -158,6 +187,13 @@ python3 tools/testar_api.py http://127.0.0.1:8972 Teste-Master-2026
 # navegador real (login, formatos, filtros, exportação, nuvem, permissões, PWA, celular)
 npm i puppeteer-core
 BASE=http://127.0.0.1:8972 EMAIL=... SENHA=... AMOSTRAS=<pasta com imagens> SAIDA=<pasta> node tools/prova_navegador.mjs
+
+# IA com o Claude simulado (nenhuma chamada à Anthropic, chave fictícia): rotas, cotas, permissões, limites, SVG
+cd server && STUDIO_DATA=/tmp/studio-ia STUDIO_COOKIE_SECURE=0 STUDIO_MASTER_EMAIL=contato@gplansis.com \
+  STUDIO_MASTER_PASSWORD='Teste-Master-2026' ../.venv/bin/python ../tools/servidor_teste_ia.py 8973 & cd ..
+python3 tools/testar_ia.py http://127.0.0.1:8973 Teste-Master-2026
+# no navegador (num banco novo, depois de trocar a senha inicial do master):
+BASE=http://127.0.0.1:8973 EMAIL=contato@gplansis.com SENHA=... SAIDA=<pasta> node tools/prova_ia.mjs
 ```
 
 ## Estrutura de pastas
@@ -169,10 +205,11 @@ web/
   login.html                  página de login (pública)
   manifest.webmanifest, sw.js PWA
   icons/                      logo, ícones 192/512, maskable, apple-touch, favicon
-  plus/                       formats.js · filters.js · account.js · plus.css
+  plus/                       formats.js · filters.js · account.js · ai.js · plus.css
   vendor/                     bibliotecas de terceiros (com os textos de licença)
 server/
   app.py                      FastAPI + SQLite: sessão, usuários, permissões, avatar, preferências, nuvem, auditoria
+  ai.py                       funções de IA (Claude): rotas /api/ai/*, cotas, uso e configuração
   requirements.txt
 deploy/
   enviar.sh                   build + envio + serviço + Caddy (idempotente, com backup e validação)
@@ -181,6 +218,9 @@ deploy/
   env.exemplo                 modelo do .env de produção
 tools/
   testar_api.py               prova da API
+  testar_ia.py                prova das rotas de IA (contra servidor_teste_ia.py)
+  servidor_teste_ia.py        servidor de teste com o Claude simulado (nunca em produção)
+  prova_ia.mjs                prova das funções de IA no Chrome
   prova_navegador.mjs         prova de ponta a ponta no Chrome
   gerar_icones.mjs            rasteriza os SVG da marca nos tamanhos de ícone
 ```
@@ -194,6 +234,7 @@ tools/
 | `STUDIO_MASTER_EMAIL` | e-mail do administrador master | `contato@gplansis.com` |
 | `STUDIO_MASTER_PASSWORD` | senha inicial do master (só no primeiro arranque; sem ela, uma senha aleatória é gravada em `STUDIO_DATA/senha-inicial-master.txt`) | — |
 | `STUDIO_COOKIE_SECURE` | `1` em produção (HTTPS), `0` em teste local | `1` |
+| `STUDIO_ANTHROPIC_API_KEY` | chave da Anthropic para as funções de IA (opcional; também pode ser gravada em *Configurações › IA*) | vazia = IA desligada |
 
 ## Publicar
 
@@ -204,7 +245,8 @@ tools/
 - RAW usa a prévia embutida da câmera (resolução total na maioria dos modelos atuais); não faz revelação do sensor.
 - AVIF só é exportado onde o navegador codifica; o Chrome atual não codifica.
 - O processamento roda no aparelho: no iPhone/iPad o limite de canvas é ~16,7 MP; nos demais o padrão é 6.000 px na borda maior (ajustável até 12.000 em Preferências).
-- As permissões de módulo e de exportação valem na interface do editor; usuários, auditoria e nuvem são validados no servidor.
+- As permissões de módulo e de exportação valem na interface do editor; usuários, auditoria, nuvem e IA são validados no servidor.
+- A chave da IA gravada pelo painel fica em texto no banco (protegido pela permissão 700 da pasta de dados); quem prefere não guardá-la no banco usa só `STUDIO_ANTHROPIC_API_KEY`.
 
 ## Contribua
 

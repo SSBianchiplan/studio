@@ -72,5 +72,7 @@ const STUDIO_MENU_EXTRA={'px-mbar':{
  Editar:()=>[{label:'Preenchimento inteligente (remover seleção)',k:'Shift+Del',fn:pxSmartFill,dis:()=>!P()||!P().sel}],
  Imagem:()=>[{label:'Histograma…',fn:pxHistogram},{label:'Aplicar LUT 3D (.cube)…',fn:()=>pxLoadLUT(false)}],
  Camada:()=>[{label:'Camada de ajuste: LUT 3D (.cube)…',fn:()=>pxLoadLUT(true)}]}};
-{const _bm=buildMenubar;buildMenubar=function(host,menus,extra){const X=host&&STUDIO_MENU_EXTRA[host.id];if(X)menus=menus.map(m=>X[m.label]?{...m,items:()=>[...(typeof m.items==='function'?m.items():m.items),'-',...X[m.label]()]}:m);return _bm(host,menus,extra)}}
+/* STUDIO_MENU_ADD: menus novos inteiros (ex.: IA), inseridos antes de Exibir/Projeto */
+const STUDIO_MENU_ADD={};
+{const _bm=buildMenubar;buildMenubar=function(host,menus,extra){const X=host&&STUDIO_MENU_EXTRA[host.id];if(X)menus=menus.map(m=>X[m.label]?{...m,items:()=>[...(typeof m.items==='function'?m.items():m.items),'-',...X[m.label]()]}:m);const A=host&&STUDIO_MENU_ADD[host.id];if(A&&A.length){menus=[...menus];const at=menus.findIndex(m=>m.label==='Exibir');menus.splice(at<0?menus.length:at,0,...A)}return _bm(host,menus,extra)}}
 window.addEventListener('keydown',e=>{if(e.key==='Delete'&&e.shiftKey&&S.mod==='pixel'&&!modalStack&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){e.preventDefault();e.stopImmediatePropagation();pxSmartFill()}},true);

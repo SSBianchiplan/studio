@@ -19,7 +19,7 @@ ssh "$HOST" "systemctl is-active --quiet gplansis-studio || ! ss -ltn | grep -q 
 echo "› enviando arquivos"
 ssh "$HOST" "mkdir -p $DEST/server $DEST/web.novo"
 rsync -az --delete dist/web/ "$HOST:$DEST/web.novo/"
-rsync -az server/app.py server/requirements.txt "$HOST:$DEST/server/"
+rsync -az server/app.py server/ai.py server/requirements.txt "$HOST:$DEST/server/"
 rsync -az deploy/gplansis-studio.service deploy/studio.caddy deploy/env.exemplo "$HOST:$DEST/deploy/"
 
 echo "› instalando"
