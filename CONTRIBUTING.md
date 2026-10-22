@@ -60,6 +60,6 @@ Se a mudança é visual ou de formato, rode também `tools/prova_navegador.mjs` 
 
 ## Licença das contribuições
 
-A licença do projeto ainda está **a definir pela GPlanSiS** (ver README). Ao enviar uma contribuição, você declara que o código é seu ou que tem direito de enviá-lo, e concorda que ele seja distribuído sob a licença que o projeto vier a adotar.
+O projeto é distribuído sob a [licença MIT](LICENSE). Ao enviar uma contribuição, você declara que o código é seu (ou que tem direito de enviá-lo) e concorda que ela seja distribuída sob a licença MIT.
 
 Dúvidas: abra uma issue do tipo "Pergunta" ou escreva para contato@gplansis.com.

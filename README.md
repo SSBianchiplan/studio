@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://studio.gplansis.com"><img alt="no ar" src="https://img.shields.io/badge/no%20ar-studio.gplansis.com-f6a709?style=flat-square"></a>
   <img alt="versão 2.0.0" src="https://img.shields.io/badge/vers%C3%A3o-2.0.0-3a86d9?style=flat-square">
-  <img alt="licença a definir" src="https://img.shields.io/badge/licen%C3%A7a-a%20definir-8e979d?style=flat-square">
+  <a href="LICENSE"><img alt="licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-2ea44f?style=flat-square"><">
   <img alt="PWA" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-3faa6b?style=flat-square">
   <img alt="FastAPI + SQLite" src="https://img.shields.io/badge/servidor-FastAPI%20%2B%20SQLite-1f2428?style=flat-square">
   <a href="CONTRIBUTING.md"><img alt="contribuições bem-vindas" src="https://img.shields.io/badge/contribui%C3%A7%C3%B5es-bem--vindas-f6a709?style=flat-square"></a>
@@ -223,7 +223,7 @@ Leia o [guia de contribuição](CONTRIBUTING.md), o [código de conduta](CODE_OF
 
 ## Licença
 
-**Licença: a definir pela GPlanSiS.** Até lá, todos os direitos sobre o código próprio do Studio pertencem à GPlanSiS.
+Código próprio sob a **[licença MIT](LICENSE)** — Copyright (c) 2026 GPlanSiS.
 
 As bibliotecas de terceiros mantêm as próprias licenças (textos em `web/vendor/LICENSE-*`): polygon-clipping, JSZip, UTIF.js, pako, ag-psd, `@cornerstonejs/codec-openjpeg` (MIT) · libheif (LGPL-3.0) · jSquash JPEG XL (Apache-2.0) · OpenJPEG (BSD-2-Clause) · fontes IBM Plex (SIL OFL 1.1).
 
